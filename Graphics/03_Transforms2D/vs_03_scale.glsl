@@ -26,14 +26,16 @@ void main() {
     // Apply scaling, by multiplying the coodinates by a the scale vector
     // TODO:
     vec2 scaledPosition = a_position * u_scale;
+    vec2 scaledPosition = a_position * u_scale;
 
     // Apply rotation
     vec2 rotatedPosition = vec2(
-        scaledPosition.x *  u_rotation.x - a_position.y * u_rotation.y, 
-        scaledPosition.y *  u_rotation.x + a_position.x * u_rotation.y);
-
+        scaledPosition.x * u_rotation.x - scaledPosition.y * u_rotation.y,
+        scaledPosition.y * u_rotation.x + scaledPosition.x * u_rotation.y
+    );
 
     // Apply translation
+    vec2 position = rotatedPosition + u_translation;
     vec2 position = rotatedPosition + u_translation;
 
     gl_Position = projection2D(position, u_resolution);
