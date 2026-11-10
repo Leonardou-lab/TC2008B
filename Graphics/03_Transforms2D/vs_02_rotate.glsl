@@ -30,7 +30,6 @@ void main() {
     );
 
     vec2 position = rotatedPosition + u_translation;
-    vec2 position = rotatedPosition + u_translation;
 
     gl_Position = projection2D(position, u_resolution);
 }

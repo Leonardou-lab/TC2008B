@@ -63,8 +63,6 @@ function drawScene(
         u_color: [Math.random(), Math.random(), Math.random(), 1],
         u_translation: translation,
         u_rotation: rotation,
-        u_translation: translation,
-        u_rotation: rotation,
     }
     console.log(uniforms);
 
