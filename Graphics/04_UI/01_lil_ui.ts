@@ -11,7 +11,7 @@
 'use strict';
 
 import * as twgl from 'twgl-base.js';
-import { shapeF, shapeF_centered } from '../libs/shapes.js';
+import { shapeF, shapeF_centered } from '../libs/shapes.js'; 
 import GUI from 'lil-gui';
 import { V2, M3 } from '../libs/2d-lib.js';
 

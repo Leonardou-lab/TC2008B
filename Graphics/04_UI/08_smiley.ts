@@ -9,7 +9,7 @@
 
 import * as twgl from 'twgl-base.js';
 import GUI from 'lil-gui';
-import { diamond, shapeF_centered, smiley } from '../libs/shapes.js';
+import { diamond, shapeF_centered, smiley, BalonFut } from '../libs/shapes.js';
 import { V2, M3, type Vec2, type Mat3 } from '../libs/2d-lib.js';
 import { Scene } from '../libs/scene.js';
 import { type Color } from '../libs/color.js';
@@ -24,11 +24,12 @@ import fsGLSL from './fs_vertex_color.glsl?raw';
  * Specifies the objects that will be used, and the UI operations available.
  */
 class RotationScene extends Scene {
+    order: string = 'scale -> rotation -> translation';
     constructor(gl: WebGL2RenderingContext) {
         super(gl, vsGLSL, fsGLSL);
 
         // Create the objects for this scene
-        const model = this.addObject('model', smiley(150),
+        const model = this.addObject('model', BalonFut(150),
             [ Math.random(), Math.random(), Math.random(), 1 ]);
         model.transforms.t.x = gl.canvas.width / 2;
         model.transforms.t.y = gl.canvas.height / 2;
@@ -37,6 +38,7 @@ class RotationScene extends Scene {
             [ 0.6, 0.6, 0.6, 1]);
         pivot.transforms.t.x = gl.canvas.width / 2;
         pivot.transforms.t.y = gl.canvas.height / 2;
+
     }
 
     // Method to draw the scene.
@@ -58,14 +60,56 @@ class RotationScene extends Scene {
 
         // Transform matrices for the model
         // TODO: Create the matrices necessary
-
-
+        const scaleMatrixModel: Mat3 = M3.scale(v2_scale);
+        const translateMatrixModel: Mat3 = M3.translation(v2_trans);
+        const rotateMatrixModel: Mat3 = M3.rotation(model.transforms.rr.z);
+        const pivotToCenterMatrix: Mat3 = M3.translation(v2_pivot_to_center);
+        const centerToPivotMatrix: Mat3 = M3.translation(v2_center_to_pivot);
 
         // Create a composite transform matrix
         let modelTransforms: Mat3 = M3.identity();
         // TODO: Multiply the matrices in the correct order to obtain the required results
+        
+        if(this.order === 'scale -> rotation -> translation'){
 
+            modelTransforms = M3.multiply(scaleMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotateMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+            modelTransforms = M3.multiply(translateMatrixModel, modelTransforms);
 
+        }else if(this.order === 'scale -> translation -> rotation'){
+
+            modelTransforms = M3.multiply(scaleMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(translateMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotateMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+
+        }else if(this.order === 'translation -> scale -> rotation'){
+
+            modelTransforms = M3.multiply(translateMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(scaleMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotateMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+
+        }else if(this.order === 'rotation -> translation -> scale'){
+
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotateMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+            modelTransforms = M3.multiply(translateMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(scaleMatrixModel, modelTransforms);
+
+        }else if(this.order === 'rotation -> scale -> translation'){
+
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotateMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+            modelTransforms = M3.multiply(scaleMatrixModel, modelTransforms);
+            modelTransforms = M3.multiply(translateMatrixModel, modelTransforms);
+        }
 
 
         gl.useProgram(programInfo.program);
@@ -102,6 +146,15 @@ class RotationScene extends Scene {
         const pivot = this.getObject('pivot');
 
         const gui = new GUI();
+
+            gui.add(this, 'order', [
+            'scale -> rotation -> translation',
+            'scale -> translation -> rotation',
+            'translation -> scale -> rotation',
+            'rotation -> translation -> scale',
+            'rotation -> scale -> translation',
+        ]).name('Order');
+
 
         const modelFolder = gui.addFolder('Model');
 
